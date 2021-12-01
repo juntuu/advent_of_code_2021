@@ -1,0 +1,10 @@
+%!PS
+
+/input (%stdin) (r) file def
+/depths [ { input token not { exit } if } loop ] def
+/depth@ { depths exch get } def
+[ 1 3 ] {
+	0 1 index 1 depths length 1 sub {
+		dup depth@ exch 3 index sub depth@ gt { 1 add } if
+	} for = pop
+} forall
