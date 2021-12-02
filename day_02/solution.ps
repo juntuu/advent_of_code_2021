@@ -1,0 +1,17 @@
+%!PS
+
+/input (%stdin) (r) file def
+/tok { input token not { exit } if } def
+/+= { exch 1 index load add store } def
+
+[ /h /d /d2 ] { 0 def } forall
+
+{
+	tok tok 1 index /forward eq
+	{ dup /h += d mul /d2 += pop }
+	{ exch /up eq { -1 mul } if /d += }
+	ifelse
+} loop
+
+h d mul =
+h d2 mul =
