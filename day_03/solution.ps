@@ -1,0 +1,17 @@
+%!PS
+
+/data [ { (%stdin) (r) file 20 string readline not { pop exit } if } loop ] def
+/freq { 0 1 index { bit get 48 sub add } forall exch length 2 div } def
+/bits data 0 get length def
+
+0 0 1 bits 1 sub { /bit exch def data freq gt { 1 add } if 2 mul } for 2 idiv
+dup -1 bits bitshift xor not mul =
+
+{ ge lt } {
+	/bit 0 def data {
+		dup length 1 le { exch pop exit } if
+		/keep 1 index freq 4 index exec def
+		[ exch { dup bit get 49 eq keep ne { pop } if } forall ]
+		/bit bit 1 add def
+	} loop 0 get 0 exch { 48 sub add 2 mul } forall 2 idiv
+} forall mul =
