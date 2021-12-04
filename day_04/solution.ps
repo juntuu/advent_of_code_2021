@@ -1,0 +1,43 @@
+%!PS
+
+/input (%stdin) (r) file def
+
+[
+	input 1024 string readline pop
+	{ (,) search { cvi 3 1 roll pop } { cvi exit } ifelse } loop
+]
+
+/boards << 0 1 1e7 {
+	[ 5 { [ 5 { input token pop } repeat ] } repeat ]
+	input status not { pop pop exit } if
+} for >> def
+
+/+ { 0 exch { add } forall } def
+/score { 0 exch { + add } forall mul } def
+
+/mark { {
+	{
+		0 1 4 {
+			2 copy get 3 index eq { 0 put stop } if pop
+		} for pop
+	} forall
+} stopped } def
+/win? { {
+	0 1 4 {
+		0 2 index { 2 index get add } forall
+		0 eq { pop pop stop } if pop
+	} for
+	{ + 0 eq { stop } if } forall
+} stopped } def
+
+/last null def
+{ boards {
+	3 2 roll 1 index mark {
+		1 index win? {
+			2 copy exch score
+			last null eq { dup = } if /last exch store
+			boards 3 index undef
+		} if
+	} if 3 1 roll pop pop
+} forall pop } forall
+last =
