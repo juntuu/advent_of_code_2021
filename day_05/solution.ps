@@ -1,0 +1,51 @@
+%!PS
+
+/input (%stdin) (r) file def
+/next-line { [
+	input 60 string readline not { pop pop exit } if
+	(,) search pop cvi 3 1 roll pop token pop exch
+	(-> ) anchorsearch pop pop
+	(,) search pop cvi 3 1 roll pop cvi
+] } def
+
+/add-point { % x y dict --
+	exch 2 copy known
+	{ get exch 2 copy known { 1 } { 0 } ifelse }
+	{ << 4 3 roll 0 >> }
+	ifelse put
+} def
+
+/no-diagonals <<>> def
+/all-lines <<>> def
+
+/sign { dup 0 ne { dup abs idiv } if } def
+/delta { line 1 index 2 add get line 3 2 roll get sub } def
+/len { 0 delta abs 1 delta abs max } def
+/diagonal? { dx dy mul 0 ne } def
+/add-line {
+	line 0 get line 1 get len 1 add {
+		2 copy 4 index add-point
+		exch dx add exch dy add
+	} repeat pop pop pop
+} def
+/overlap { 0 exch { exch pop 0 exch { exch pop add } forall add } forall } def
+
+<< /PageSize [ 1000 1000 ] >> setpagedevice
+/draw-line {
+	diagonal? { 1 0 0 } { 0 1 0 } ifelse setrgbcolor
+	line aload pop moveto lineto stroke
+} def
+
+{
+	/line next-line def
+	/dx 0 delta sign def
+	/dy 1 delta sign def
+	all-lines add-line
+	diagonal? not { no-diagonals add-line } if
+	draw-line
+} loop pop
+
+no-diagonals overlap =
+all-lines overlap =
+
+showpage
