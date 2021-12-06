@@ -1,0 +1,13 @@
+%!PS
+
+/A [ 9 { 0 } repeat ] def
+/+ { A 2 index get add A 3 1 roll put } def
+/tick { dup 7 add 9 mod A 2 index 9 mod get + 1 add } def
+
+(%stdin) (r) file 1024 string readline pop
+{ (,) search exch cvi 1 + not { exit } if pop } loop
+
+0 [ 80 256 ] {
+	1 index sub { tick } repeat
+	0 A { add } forall =
+} forall pop
