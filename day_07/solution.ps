@@ -1,0 +1,16 @@
+%!PS
+
+/data [ (%stdin) (r) file 4096 string readline pop {
+	(,) search exch cvi exch not { exit } if exch pop exch
+} loop ] def
+
+/range [ { gt lt } {
+	data 0 get data { 2 copy 4 index exec { exch } if pop } forall exch pop
+} forall 1 exch ] cvx def
+
+{ {} { dup 1 add mul 2 idiv } } {
+	1e9 range {
+		0 data { 2 index sub abs 4 index exec add } forall
+		3 2 roll 2 copy gt { exch } if pop exch pop
+	} for = pop
+} forall
