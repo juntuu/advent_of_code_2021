@@ -1,0 +1,47 @@
+%!PS
+
+/input (%stdin) (r) file def
+/map [ { input 256 string readline not { pop exit } if } loop ] def
+/@ { % x y
+	mark 3 1 roll { map exch get exch get } stopped
+	{ cleartomark 57 } { exch pop } ifelse
+} def
+
+/low {
+	x y @ x 1 add y @ lt
+	x y @ x 1 sub y @ lt and
+	x y @ x y 1 add @ lt and
+	x y @ x y 1 sub @ lt and
+} def
+
+/basin { % x y
+	2 copy @ 57 lt {
+		map 1 index get 2 index 57 put
+		/B B 1 add def
+		2 copy 1 add basin
+		2 copy 1 sub basin
+		2 copy exch 1 sub exch basin
+		exch 1 add exch basin
+	} { pop pop } ifelse
+} def
+
+/A 0 def
+/B [ 0 1 map length 1 sub {
+	/y exch def
+	0 1 map y get length 1 sub {
+		/x exch def
+		low {
+			/A A x y @ 47 sub add def
+			/B 0 def x y basin B
+		} if
+	} for
+} for ] def
+
+1 3 {
+	/max 0 def
+	0 B { B max get gt { /max 1 index def } if 1 add } forall pop
+	B max get B max 0 put
+	mul
+} repeat
+
+A = =
