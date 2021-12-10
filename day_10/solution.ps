@@ -1,0 +1,30 @@
+%!PS
+
+/input (%stdin) (r) file def
+/next { input 256 string readline not { pop exit } if } def
+
+/closing << (\)) 0 get 3 (]) 0 get 57 (}) 0 get 1197 (>) 0 get 25137 >> def
+/score { 1 (\([{<) { 2 index eq { exit } if 1 add } forall exch pop } def
+
+/A 0 def
+
+mark {
+	next {
+		closing 1 index known {
+			2 copy sub dup -1 ne exch -2 ne and {
+				closing exch get A add /A exch def
+				cleartomark mark exit
+			} if pop pop
+		} if
+	} forall
+	counttomark 0 exch { 5 mul exch score add } repeat
+	dup 0 ne { dup count 1 roll } if pop
+} loop pop
+
+count 2 idiv {
+	{ lt gt } { /cmp exch def
+		count { 2 copy cmp { exch } if count 1 roll } repeat pop
+	} forall
+} repeat
+
+A = =
