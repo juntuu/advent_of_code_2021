@@ -2,13 +2,18 @@
 
 /input (%stdin) (r) file def
 
-/row { 0 exch get } dup 0 [ 10 { input 10 string readline pop } repeat ] put def
+/row { 0 exch get } dup 0
+[ { input 256 string readline not { pop exit } if } loop ]
+/h 1 index length def
+put def
+/w h 0 gt { 0 row length } { 0 } ifelse def
+
 /@ { row exch get } def
 /++ { row exch 2 copy get 1 add put } def
 
 /zero (0) 0 get def
 /nine (9) 0 get def
-/range { 0 1 9 } def
+/range { 0 1 3 2 roll 1 sub } def
 /around [
 	{ -1 -1 } { -1 +0 } { -1 +1 }
 	{ +0 -1 }           { +0 +1 }
@@ -17,18 +22,43 @@
 
 /inc { mark 3 1 roll { 2 copy @ zero ne { ++ } if } stopped cleartomark } def
 /step {
-	range { range { 1 index ++ } for pop } for
+	h range { w range { 1 index ++ } for pop } for
 	0 {
 		0
-		range { range { 2 copy @ nine gt {
+		w range { h range { 2 copy @ nine gt {
 			3 2 roll 1 add 3 1 roll
 			2 copy row exch zero put
-			around { exec 3 index add exch 2 index add inc } forall
+			around { exec exch 3 index add exch 2 index add inc } forall
 		} if pop } for pop } for
 		dup 0 eq { pop exit } if
 		add
 	} loop
 } def
 
-0 100 { step add } repeat =
-100 { 1 add step 100 eq { exit } if } loop =
+% To generate a gif using GhostScript and ImageMagick:
+%   mkdir frames
+%   gs -sDEVICE=png16 -o frames/%03d.png solution.ps <input.txt
+%   convert frames/* out.gif
+/draw currentpagedevice /OutputDevice get /bbox eq { {} } {
+	/size 72 def
+	<< /PageSize [ w size mul h size mul ] >> setpagedevice
+	/Helvetica 5 selectfont
+	/N 0 def
+	/color { zero sub dup 0 eq { pop 1 } { 10 div } ifelse } def
+	{
+		size size scale
+		h range { w range {
+			2 copy exch @ color setgray
+			h 1 sub 2 index sub 1 1 rectfill
+		} for pop } for
+		0 setgray
+		1 1 moveto N (   ) cvs show
+		showpage
+		/N N 1 add def
+	}
+} ifelse def
+
+draw
+0 100 { step draw add } repeat =
+100 { 1 add step draw w h mul eq { exit } if } loop =
+30 { step draw } repeat
