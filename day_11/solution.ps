@@ -1,0 +1,34 @@
+%!PS
+
+/input (%stdin) (r) file def
+
+/row { 0 exch get } dup 0 [ 10 { input 10 string readline pop } repeat ] put def
+/@ { row exch get } def
+/++ { row exch 2 copy get 1 add put } def
+
+/zero (0) 0 get def
+/nine (9) 0 get def
+/range { 0 1 9 } def
+/around [
+	{ -1 -1 } { -1 +0 } { -1 +1 }
+	{ +0 -1 }           { +0 +1 }
+	{ +1 -1 } { +1 +0 } { +1 +1 }
+] def
+
+/inc { mark 3 1 roll { 2 copy @ zero ne { ++ } if } stopped cleartomark } def
+/step {
+	range { range { 1 index ++ } for pop } for
+	0 {
+		0
+		range { range { 2 copy @ nine gt {
+			3 2 roll 1 add 3 1 roll
+			2 copy row exch zero put
+			around { exec 3 index add exch 2 index add inc } forall
+		} if pop } for pop } for
+		dup 0 eq { pop exit } if
+		add
+	} loop
+} def
+
+0 100 { step add } repeat =
+100 { 1 add step 100 eq { exit } if } loop =
