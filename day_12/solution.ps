@@ -1,0 +1,37 @@
+%!PS
+
+/input (%stdin) (r) file def
+
+/map <<>> def
+/connect {
+	dup (start) ne 2 index (end) ne and {
+		map 2 index known { map 2 index get } { [] } ifelse
+		[ 3 1 roll aload pop ] map 3 1 roll put
+	} { pop pop } ifelse
+} def
+
+{
+	input 20 string readline not { pop exit } if
+	(-) search pop exch pop 2 copy connect exch connect
+} loop
+
+/vis << map { pop 0 } forall >> def
+/leave { dup (^) gt { vis 1 index 2 copy get 1 sub put } if } def
+/visit {
+	dup (^) gt {
+		vis 1 index 2 copy get 1 add put
+		true vis { part gt { pop pop false exit } if pop } forall
+		dup part 2 eq and {
+			0 vis { exch pop 2 eq { 1 add } if } forall 2 lt and
+		} if
+	} { true } ifelse
+} def
+
+/paths {
+	dup (end) eq { /N N 1 add def } {
+		visit { map 1 index get { paths } forall } if leave
+	} ifelse pop
+} def
+
+/part 1 def /N 0 def (start) paths N =
+/part 2 def /N 0 def (start) paths N =
