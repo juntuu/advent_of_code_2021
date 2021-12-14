@@ -1,0 +1,42 @@
+%!PS
+
+/input (%stdin) (r) file def
+
+/pairs <<>> def
+/+= { 2 index 2 index known { 2 index 2 index get add } if put } def
+
+input 256 string readline pop
+/first 1 index 0 get def
+/last 1 index dup length 1 sub get def
+0 1 2 index length 2 sub { 1 index exch 2 getinterval pairs exch 1 += } for pop
+
+/subs << {
+	input token not { exit } if
+	input (-> X) readstring pop 3 get
+} loop >> def
+
+/split { [ % key -- [ k1 k2 ]
+	exch subs 1 index get exch (  ) cvs {  } forall
+	(  ) dup 1 4 3 roll put dup 0 4 index put
+	3 1 roll
+	(  ) dup 0 4 3 roll put dup 1 4 3 roll put
+] } def
+
+/extend {
+	/pairs <<>> pairs {
+		exch split { 2 index exch 2 index += } forall pop
+	} forall def
+} def
+
+/answer {
+	[ << first 1 last 1 >> pairs {
+		exch (  ) cvs { 2 index exch 2 index += } forall pop
+	} forall { exch pop } forall ]
+	dup { gt lt } {
+		/cmp exch def
+		dup 0 get exch { 2 copy cmp { exch } if pop } forall
+		exch
+	} forall sub 2 idiv
+} def
+
+[ 10 30 ] { { extend } repeat answer = } forall
