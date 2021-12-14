@@ -1,0 +1,123 @@
+%!PS
+
+/input (%stdin) (r) file def
+/output (%stdout) (w) file def
+
+% If true, draw the image also before each fold
+/draw-frames true def
+% Combine new pixel value from two previous values
+/combine {
+	[
+		2 index 0 get 2 index 0 get add
+		3 index 1 get 3 index 1 get add
+		4 index 2 get 4 index 2 get add
+	]
+	exch pop exch pop
+} def
+
+/dots 1000 dict def
+{
+	input 256 string readline pop dup length 0 eq { pop exit } if
+	(:) search {
+		exch pop
+		exch
+		[
+			exch (,) search pop cvi exch pop
+			exch (,) search pop cvi exch pop
+			exch cvi
+		]
+	} { [ 0 0 0 ] } ifelse
+	dots 3 1 roll put
+} loop
+
+/value {
+	% /x,y -- x y
+	256 string cvs
+	(,) search pop exch pop
+	cvi exch cvi
+} def
+
+/key {
+	% x y -- /x,y
+	256 string cvs
+	256 string dup
+	4 3 roll 1 index cvs
+	length 2 copy (,) putinterval
+	1 add 4 3 roll putinterval
+	token pop exch pop
+} def
+
+/fold {
+	/fn exch def
+	dots dup length dict copy {
+		1 index value fn {
+			key exch dots 4 3 roll undef
+			dots 2 index known {
+				dots 2 index get combine
+			} if
+			dots 3 1 roll put
+		} { pop pop pop pop } ifelse
+	} forall
+
+} def
+/next-fold {
+	input token not { exit } if input token pop pop pop
+	input 256 string readline pop
+	(=) search pop exch pop
+	cvn dup 3 2 roll cvi def
+	/x eq {
+		{ 1 index x gt { exch 2 x mul exch sub exch true } { false } ifelse }
+	} {
+		{ dup y gt { 2 y mul exch sub true } { false } ifelse }
+	} ifelse fold
+} def
+
+/bounds { max-x min-x sub 1 add max-y min-y sub 1 add } def
+/set-if { 3 1 roll 2 copy load 5 4 roll exec { 1 index store } { pop } ifelse pop } def
+/set-bounds {
+	/max-x 0 def /min-x 1e10 def
+	/max-y 0 def /min-y 1e10 def
+	dots {
+		pop value 2 copy
+		[ /max-y /max-x ] { { gt } set-if } forall
+		[ /min-y /min-x ] { { lt } set-if } forall
+	} forall
+} def
+
+/inited false def
+/init-page {
+	set-bounds
+	<< /PageSize [ bounds ] >> setpagedevice
+	bounds [ /h /w ] { exch def } forall
+	/inited true def
+} def
+/frame {
+	inited not { init-page } if
+	set-bounds
+	bounds h exch 1 add div exch w exch 1 add div 2 copy gt { exch } if pop dup scale
+	dots {
+		{ 255 div } forall setrgbcolor
+		value exch min-x sub 1 add
+		exch max-y exch sub 1 add
+		0.5 0 360 arc fill
+	} forall
+	showpage
+} def
+
+/limit 4000 def
+/small-enough { set-bounds bounds limit lt exch limit lt and } def
+
+draw-frames { small-enough { frame } if } if
+
+next-fold dots length =
+{ draw-frames { small-enough { frame } if } if next-fold } loop
+
+draw-frames not { frame } if
+
+min-y 1 max-y {
+	min-x 1 max-x {
+		2 copy exch key dots exch known { 1 } { 0 } ifelse
+		output ( #) 3 2 roll get write pop
+	} for
+	output (\n) writestring pop
+} for
