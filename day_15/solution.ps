@@ -1,0 +1,64 @@
+%!PS
+
+/input (%stdin) (r) file def
+
+/map [ { input 256 string readline not { pop exit } if } loop ] def
+/H map length def
+/zero (0) 0 get def
+
+/risk {
+	% x y
+	2 copy map 2 { exch H mod get } repeat zero sub
+	2 { exch H idiv add } repeat 1 sub 9 mod 1 add
+} def
+
+/key {
+	% x y -- /x,y
+	256 string cvs
+	256 string dup
+	4 3 roll 1 index cvs
+	length 2 copy (,) putinterval
+	1 add 4 3 roll putinterval
+	token pop exch pop
+} def
+
+/value {
+	% /x,y -- x y
+	256 string cvs
+	(,) search pop exch pop
+	cvi exch cvi
+} def
+
+/extract-min {
+	null 1e9 Q {
+		dup 3 index lt { 4 2 roll } if
+		pop pop
+	} forall
+	Q 2 index undef
+} def
+
+/add-node {
+	% val x y x' y'
+	2 copy key 3 1 roll visited 3 index known not
+	2 { 2 index dup 0 ge exch X lt and } repeat and and {
+		risk Q 2 index known {
+			Q 2 index get exch 5 index add
+			2 copy gt { exch } if pop
+		} { 4 index add } ifelse
+		Q 3 1 roll put
+	} { pop pop pop } ifelse
+} def
+
+[ 1 5 ] {
+	/X exch H mul def
+	/visited <<>> def
+	/Q << /0,0 0 >> def
+	X 1 sub dup key
+	{
+		mark extract-min visited 2 index 1 put
+		1 index 4 index eq { = cleartomark pop exit } if
+		1 index value [ { -1 0 } { +1 0 } { 0 -1 } { 0 +1 } ] { exec
+			[ 2 3 ] { index add exch } forall add-node
+		} forall cleartomark
+	} loop
+} forall
