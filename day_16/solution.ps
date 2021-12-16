@@ -1,0 +1,44 @@
+%!PS
+
+/input (%stdin) (r) file /ASCIIHexDecode filter def
+
+/consumed 0 def
+/last-pos 0 def
+/bit {
+	/consumed consumed 1 add def
+	last-pos dup 0 eq { /last-byte input read pop def pop -8 } if
+	/last-pos exch 1 add def
+	last-byte last-pos bitshift 1 and
+} def
+/bits { 0 exch { 1 bitshift bit or } repeat } def
+
+/literal { 0 { 4 bitshift bit 4 bits exch 0 eq { exit } if add } loop add } def
+/operators [
+	{ add 0 }
+	{ mul 1 }
+	{ { 2 copy gt { exch } if pop } 1e9 }
+	{ { 2 copy lt { exch } if pop } 0 }
+	null
+	{ { 1 index 0 lt { exch pop } { gt { 1 } { 0 } ifelse } ifelse } -1 }
+	{ { 1 index 0 lt { exch pop } { lt { 1 } { 0 } ifelse } ifelse } -1 }
+	{ { 1 index 0 lt { exch pop } { eq { 1 } { 0 } ifelse } ifelse } -1 }
+] def
+
+/A 0 def
+/decode {
+	/A A 3 bits add def
+	operators 3 bits get
+	dup null eq { pop literal } {
+		aload pop bit 1 eq {
+			11 bits { decode 2 index exec } repeat
+		} {
+			15 bits consumed add 3 1 roll {
+				2 index consumed le { exit } if
+				decode 2 index exec
+			} loop exch pop
+		} ifelse
+		exch pop
+	} ifelse
+} def
+
+decode A = =
