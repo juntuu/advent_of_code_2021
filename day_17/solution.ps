@@ -1,0 +1,36 @@
+%!PS
+
+/input (%stdin) (r) file def
+/next-line {
+	input 256 string readline not { pop exit } if
+	(=) search pop pop pop
+	(..) search pop /min-x exch cvi def pop
+	(, y=) search pop /max-x exch cvi def pop
+	(..) search pop /min-y exch cvi def pop
+	/max-y exch cvi def
+} def
+
+/hit { x min-x ge x max-x le and y min-y ge y max-y le and and } def
+/miss { x max-x gt y min-y lt or dx 0 le x min-x lt and or } def
+
+{ next-line
+	0 0
+	1 1 max-x { /dx0 exch def min-y 1 min-y neg { /dy0 exch def
+		/dy dy0 def
+		/dx dx0 def
+		/x 0 def
+		/y 0 def
+		{
+			hit {
+				1 add dy0 2 index gt { exch pop dy0 exch } if
+				exit
+			} if
+			miss { exit } if
+			/y y dy add def
+			/x x dx add def
+			/dy dy 1 sub def
+			dx 0 gt { /dx dx 1 sub def } if
+		} loop
+	} for } for
+	exch dup 1 add mul 2 idiv = =
+} loop
