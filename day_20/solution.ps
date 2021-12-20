@@ -29,7 +29,7 @@ def
 	mark 4 1 roll {
 		3 2 roll get exch get exch pop
 	} stopped { cleartomark fill-value } if
-} def
+} bind def
 
 /pixel {
 	0 -1 1 1 { -1 1 1 {
@@ -39,7 +39,7 @@ def
 		3 2 roll 2 mul add exch
 	} for pop } for
 	algorithm exch get
-} def
+} bind def
 
 /enhance {
 	/height 1 index length def
