@@ -53,10 +53,32 @@ def
 		] exch
 	} for pop ]
 	/round round 1 add def
+	draw
 } def
 
 /lit { 0 exch { { add } forall } forall } def
 
+
 /round 0 def
-image enhance enhance dup lit = flush
-50 round sub { enhance } repeat lit =
+/max-rounds 50 def
+
+/scale-factor 10 def
+/draw currentpagedevice /OutputDevice get /bbox ne {
+	/height image length def
+	/width image 0 get length def
+	<< /PageSize [ [ width height ] { max-rounds 1 sub 2 mul add scale-factor mul } forall ] >> setpagedevice
+	{
+		scale-factor dup scale
+		max-rounds round sub dup translate
+		0 1 height 1 sub {
+			2 copy get 0 1 width 1 sub {
+				2 copy get 1 eq { 2 index 1 1 rectfill } { pop } ifelse
+			} for pop pop
+		} for
+
+		showpage
+	}
+} { {} } ifelse def
+
+image draw enhance enhance dup lit = flush
+max-rounds round sub { enhance } repeat lit =
