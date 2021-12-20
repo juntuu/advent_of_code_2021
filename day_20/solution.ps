@@ -72,7 +72,7 @@ def
 		max-rounds round sub dup translate
 		0 1 height 1 sub {
 			2 copy get 0 1 width 1 sub {
-				2 copy get 1 eq { 2 index 1 1 rectfill } { pop } ifelse
+				2 copy get fill-value ne { 2 index 1 1 rectfill } { pop } ifelse
 			} for pop pop
 		} for
 
