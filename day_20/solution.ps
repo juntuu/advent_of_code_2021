@@ -1,0 +1,62 @@
+%!PS
+
+/assert { exch not {
+	$error /newerror true put
+	(%stderr) (w) file [ (\033[31mASSERT FAIL:\033[0m ) 4 3 roll (\n) ] {
+		2 copy writestring pop
+	} forall flushfile
+	stop
+} if pop } def
+
+/input (%stdin) (r) file def
+
+/char-to-bit { 10 idiv 4 exch sub } def
+/read-bits { [ 3 1 roll string readline pop { char-to-bit } forall ] aload length } def
+
+/algorithm [ { input 512 read-bits 0 eq { exit } if } loop ] def
+algorithm length 512 eq (invalid algorithm) assert
+/fill-value
+	algorithm 0 get 1 eq {
+		algorithm 511 get 0 eq (last must be 0, when first is 1) assert
+		{ round 2 mod }
+	} { 0 } ifelse
+def
+
+/image [ { [ input 256 read-bits 0 eq { pop exit } if ] } loop ] def
+
+/get-or-fill {
+	% y x img
+	mark 4 1 roll {
+		3 2 roll get exch get exch pop
+	} stopped { cleartomark fill-value } if
+} def
+
+/pixel {
+	0 -1 1 1 { -1 1 1 {
+		5 index 2 index add
+		exch 5 index add
+		4 index get-or-fill
+		3 2 roll 2 mul add exch
+	} for pop } for
+	algorithm exch get
+} def
+
+/enhance {
+	/height 1 index length def
+	/width 1 index 0 get length def
+	[ exch -1 1 height {
+		[ exch
+			-1 1 width {
+				counttomark 1 add index pixel
+				4 1 roll pop pop
+			} for pop
+		] exch
+	} for pop ]
+	/round round 1 add def
+} def
+
+/lit { 0 exch { { add } forall } forall } def
+
+/round 0 def
+image enhance enhance dup lit = flush
+50 round sub { enhance } repeat lit =
