@@ -1,0 +1,77 @@
+%!PS
+
+/zero (0) 0 get def
+/open ([) cvn load cvlit def
+/close (]) cvn load cvlit def
+/delim << ([]) { zero sub } forall close cvx open cvx 3 1 roll >> def
+
+/input (%stdin) (r) file def
+/lines [ {
+	input 256 string readline not { pop exit } if
+	[ exch {
+		zero sub dup 0 lt { pop } {
+			dup 9 gt { delim exch get } if
+		} ifelse
+	} forall ]
+} loop ] def
+
+/explode {
+	/unchanged true def
+	/carry 0 def
+	/depth 0 def
+	[ exch { unchanged {
+		dup close eq {
+			depth 4 gt {
+				/unchanged false def
+				pop
+				/carry exch def
+				2 1 counttomark 3 sub { /i exch def
+					i index type /integertype eq {
+						i 1 add i roll add i 1 roll
+						0 exit
+					} if
+				} for
+				pop pop 0
+			} if
+			/depth depth 1 sub def
+		} { dup open eq { /depth depth 1 add def } if } ifelse
+	} {
+		carry 0 ne { dup type /integertype eq {
+			carry add /carry 0 def
+		} if } if
+	} ifelse } forall ]
+	unchanged
+} bind def
+
+/split {
+	/unchanged true def
+	[ exch { unchanged {
+		dup type /integertype eq { dup 9 gt {
+			/unchanged false def
+			open exch
+			2 div dup floor cvi exch ceiling cvi
+			close
+		} if } if
+	} if } forall ]
+	unchanged
+} bind def
+
+/magnitude {
+	dup type /arraytype eq {
+		aload pop magnitude 2 mul
+		exch magnitude 3 mul add
+	} if
+} bind def
+/sum {
+	1 sub array astore {
+		[ open [ 5 3 roll ] { aload pop } forall close ]
+		{ explode { split { exit } if } if } loop
+	} forall { cvx exec } forall magnitude
+} bind def
+
+lines aload length sum =
+/max 0 def
+lines { lines { 2 copy ne {
+	1 index 2 sum dup max gt { /max exch def 0 } if
+} if pop } forall pop } forall
+max =
