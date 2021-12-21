@@ -1,0 +1,70 @@
+%!PS
+
+/input (%stdin) (r) file def
+[ /A /B ] { 4 { input token pop pop } repeat input token pop def } forall
+
+/deterministic {
+	/rolls 0 def
+	0 exch 0 4 3 roll {
+		rolls 1 add 3 mul add 2 add 10 mod 1 add
+		/rolls rolls 3 add def
+		exch 1 index add
+		dup 1000 ge { exit } if
+		exch 4 2 roll
+	} loop pop pop pop
+	rolls mul
+} bind def
+
+/concat { % (str1) (str2) -- (str1\0str2)
+	2 copy length exch length add 1 add string dup dup
+	4 3 roll 4 index length 1 add exch putinterval 3 1 roll exch
+	0 exch putinterval
+} bind def
+
+/key { () exch { 10 string cvs concat } forall } bind def
+/value { [ exch 256 string cvs { token not { exit } if exch } loop ] } bind def
+
+/+= {
+	% val dict key
+	2 copy known { 2 copy get } { 0 } ifelse
+	4 3 roll add put
+} bind def
+
+/dice << 3 1 4 3 5 6 6 7 7 6 8 3 9 1 >> def
+
+/quantum {
+	/qa 0 def
+	/qb 0 def
+	[ 3 2 roll 1 sub 0 4 3 roll 1 sub 0 ] key
+	<< exch 1 >> {
+		dup length 0 eq { pop exit } if
+		<< >> exch {
+			exch /state exch value def
+			dice {
+				2 index mul
+				exch state 0 get add 10 mod
+				dup state 1 get add 1 add
+				dup 21 ge { pop pop /qa exch qa add def } {
+					4 index [ 4 2 roll state 2 get state 3 get ] key +=
+				} ifelse
+			} forall
+			pop
+		} forall
+		<< >> exch {
+			exch /state exch value def
+			dice {
+				2 index mul
+				exch state 2 get add 10 mod
+				dup state 3 get add 1 add
+				dup 21 ge { pop pop /qb exch qb add def } {
+					4 index [ state 0 get state 1 get 6 4 roll ] key +=
+				} ifelse
+			} forall
+			pop
+		} forall
+	} loop
+	qa qb 2 copy lt { exch } if pop
+} bind def
+
+A B deterministic =
+A B quantum =
