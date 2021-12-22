@@ -1,0 +1,69 @@
+%!PS
+
+/input (%stdin) (r) file def
+
+/all-steps [ {
+	input 256 string readline not { pop exit } if
+	[ exch
+		( ) search pop exch pop (on) eq exch
+		[ exch
+			(x=) search pop pop pop
+			[ (..) (,y=) (..) (,z=) (..) ] {
+				search pop exch pop cvi exch
+			} forall cvi
+		]
+	]
+} loop ] def
+/small-steps [ all-steps {
+	false 1 index 1 get { abs 50 gt or } forall { pop } if
+} forall ] def
+
+/key {
+	aload pop 42 string 35 -7 0 {
+		1 index exch 7 getinterval 3 2 roll exch cvs pop
+	} for
+} bind def
+/value { [ exch 42 string cvs 6 { token pop exch } repeat pop ] } bind def
+
+/+= {
+	% val dict key
+	2 copy known { 2 copy get } { 0 } ifelse 4 3 roll add put
+} bind def
+
+/min { 2 copy gt { exch } if pop } bind def
+/max { 2 copy lt { exch } if pop } bind def
+
+/overlap { [
+	3 1 roll 2 copy 0 get exch 0 get max
+	3 1 roll 2 copy 1 get exch 1 get min
+	3 1 roll 2 copy 2 get exch 2 get max
+	3 1 roll 2 copy 3 get exch 3 get min
+	3 1 roll 2 copy 4 get exch 4 get max
+	3 1 roll        5 get exch 5 get min
+] } bind def
+
+/valid { aload pop true 3 { 3 1 roll lt and } repeat } bind def
+
+/volume {
+	0 exch {
+		exch value aload pop 7 6 roll
+		3 { 3 1 roll exch sub 1 add mul } repeat
+		add
+	} forall
+} bind def
+
+/reboot {
+	<< >> exch {
+		aload pop
+		[ 3 index { 0 eq { pop } if } forall ] {
+			dup value 2 index overlap dup valid {
+				4 index dup 3 index get neg
+				exch 2 index key +=
+			} if pop pop
+		} forall
+		exch { 2 copy key 1 3 1 roll += } if
+		pop
+	} forall volume
+} bind def
+
+[ small-steps all-steps ] { reboot = } forall
