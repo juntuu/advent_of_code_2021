@@ -1,0 +1,31 @@
+%!PS
+
+/input (%stdin) (r) file def
+/next { input token pop } def
+
+/set-digit {
+	% index val str
+	3 1 roll
+	dup 1 lt { pop 1 } if
+	dup 9 gt { pop 9 } if
+	48 add put
+} def
+
+/min 14 string def
+/max 14 string def
+0 1 13 {
+	{ next /inp eq { exit } if } loop
+	15 { next pop } repeat
+
+	next dup 9 gt { pop 29 { next pop } repeat next } {
+		3 2 roll add
+		2 copy 2 copy
+		1 add min set-digit
+		9 add max set-digit
+		exch pop 2 copy
+		1 exch sub min set-digit
+		9 exch sub max set-digit
+	} ifelse
+} for
+max =
+min =
