@@ -1,0 +1,47 @@
+%!PS
+
+/input (%stdin) (r) file def
+
+/left /down /empty (.v>) { def } forall
+/map [{ input 256 string readline not { pop exit } if } loop] def
+/H map length def
+/W map 0 get length def
+
+/map-copy { [ map { W string copy } forall ] } bind def
+
+/step {
+	false map-copy
+	0 1 H 1 sub { /y exch def 0 1 W 1 sub { /x exch def
+		dup y get x get left eq { dup y get x 1 add W mod get empty eq {
+			map y get dup x empty put x 1 add W mod left put
+			exch pop true exch
+		} if } if
+	} for } for
+	pop map-copy
+	0 1 H 1 sub { /y exch def 0 1 W 1 sub { /x exch def
+		dup y get x get down eq { dup y 1 add H mod get x get empty eq {
+			map y get x empty put map y 1 add H mod get x down put
+			exch pop true exch
+		} if } if
+	} for } for
+	pop
+} bind def
+
+/draw currentpagedevice /OutputDevice get /bbox eq { {} } {
+	/size 10 def
+	<< /PageSize [ [ W H ] { 1 add size mul } forall ] >> setpagedevice
+	{
+		size dup scale
+		1 1 translate
+		0 1 H 1 sub { /y exch def 0 1 W 1 sub { /x exch def
+			map y get x get dup empty eq { pop } {
+				1 index exch down eq { 180 add 360 mod } if
+				360 div 1 1 sethsbcolor
+				x y .5 0 360 arc fill
+			} ifelse
+		} for } for
+		showpage
+	}
+} ifelse bind def
+
+0 { draw 1 add step not { exit } if } loop =
