@@ -6,6 +6,15 @@
 # - reducing first record
 # - adding the same record to itself
 # - the max pair must be larger than the overall total
+#
+# NOTE: this exploits a bug in awk (version 20200816)
+# the expression --$u++ should not be valid,
+# but when u *happens to be a function parameter* it is allowed by awk.
+# This is parsed as (the fully parenthesised expression isn't even valid):
+#   --($(u++))
+# even though it should be parsed as:
+#   --(($u)++)
+# which would pre-decrement an rvalue.
 #############################################################################
 
 END{print M()g;for(u in N)for(m in N)S(u m)M();print B}gsub(/,|()/,FS)N[$0]&&
